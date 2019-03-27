@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.dao.MerchantRateDao">
+    <sql id="Base_Column_List">
+        a.id,
+        a.merchant_id AS "merchant.id",
+        b.company AS "merchant.company",
+        a.router_id AS "router.id",
+        d.name AS "router.name",
+        a.cost_rate AS "costRate",
+        a.pay_cost AS "payCost",
+        a.withdraw_cost AS "withdrawCost",
+        a.create_time AS "createTime",
+        a.update_time AS "updateTime"
+    </sql>
+
+    <sql id="Base_Join_Clause">
+        LEFT JOIN dst_merchant b ON a.merchant_id = b.id
+        LEFT JOIN dst_router d ON a.router_id = d.id
+    </sql>
+
+    <sql id="Base_Where_Clause">
+        <where>
+            1=1
+            <if test="merchantIds != null">
+                AND a.merchant_id IN
+                <foreach collection="merchantIds" open="(" close=")" separator="," item="merchantId">
+                    #{merchantId, jdbcType=SMALLINT}
+                </foreach>
+            </if>
+            <if test="merchantId != null">
+                AND a.merchant_id = #{merchantId}
+            </if>
+            <!--<if test="channelId != null">
+                AND a.channel_id = #{channelId}
+            </if>-->
+            <if test="routerId != null">
+                AND a.router_id = #{routerId}
+            </if>
+        </where>
+    </sql>
+
+    <select id="get" resultType="co.b4pay.admin.entity.MerchantRate">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_merchant_rate a
+        <include refid="Base_Join_Clause"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT count(1) FROM dst_merchant_rate a
+        <include refid="Base_Where_Clause"/>
+    </select>
+    <select id="findByPayCost" resultType="co.b4pay.admin.entity.MerchantRate">
+        SELECT pay_cost
+        FROM dst_merchant_rate a
+        WHERE a.merchant_id = #{merchantId}
+        AND a.router_id = #{routerId}
+    </select>
+    <select id="findList" resultType="co.b4pay.admin.entity.MerchantRate">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_merchant_rate a
+        <include refid="Base_Join_Clause"/>
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_time DESC
+            </otherwise>
+        </choose>
+        <if test="pageSize &gt; 0">
+            LIMIT ${pageFirst}, ${pageSize}
+        </if>
+    </select>
+
+    <!--<insert id="insert">-->
+    <!--INSERT INTO dst_merchant_rate(merchant_id,router_id,cost_rate,pay_cost,create_time,update_time)-->
+    <!--VALUES(#{merchant.id},#{router.id},#{costRate},#{payCost},now(),now())-->
+    <!--</insert>-->
+
+    <insert id="insert">
+        INSERT INTO dst_merchant_rate (merchant_id, router_id, cost_rate, pay_cost,withdraw_cost, create_time, update_time)
+        VALUES (#{merchant.id}, #{router.id}, #{costRate}, #{payCost}, #{withdrawCost},now(), now())
+    </insert>
+
+    <!--<update id="update">-->
+    <!--UPDATE dst_merchant_rate a SET-->
+    <!--<if test="merchant != null">-->
+    <!--a.merchant_id = #{merchant.id},-->
+    <!--</if>-->
+    <!--<if test="router != null">-->
+    <!--a.router_id = #{router.id},-->
+    <!--</if>-->
+    <!--<if test="costRate != null">-->
+    <!--a.cost_rate = #{costRate},-->
+    <!--</if>-->
+    <!--<if test="payCost != null">-->
+    <!--a.pay_cost = #{payCost},-->
+    <!--</if>-->
+    <!--update_time = now()-->
+    <!--WHERE a.id = #{id}-->
+    <!--</update>-->
+
+    <update id="update">
+        UPDATE dst_merchant_rate a SET
+        <if test="merchant != null">
+            a.merchant_id = #{merchant.id},
+        </if>
+        <if test="router != null">
+            a.router_id = #{router.id},
+        </if>
+        <if test="costRate != null">
+            a.cost_rate = #{costRate},
+        </if>
+        <if test="payCost != null">
+            a.pay_cost = #{payCost},
+        </if>
+        <if test="withdrawCost != null">
+            a.withdraw_cost = #{withdrawCost},
+        </if>
+        update_time = now()
+        WHERE a.id = #{id}
+    </update>
+
+    <delete id="delete">
+        UPDATE dst_merchant_rate a
+        SET a.status = -1
+        WHERE a.id = #{id}
+    </delete>
+
+    <sql id="Base_Column_List2">
+        a.id,
+        a.router_id AS "router.id",
+        b.name AS "router.name",
+        a.cost_rate AS "costRate",
+        a.pay_cost AS "payCost",
+        a.withdraw_cost AS "withdrawCost",
+        a.create_time AS "createTime"
+    </sql>
+
+    <select id="findByMerchantId" parameterType="java.lang.String" resultType="co.b4pay.admin.entity.MerchantRate">
+        SELECT
+        <include refid="Base_Column_List2"/>
+        FROM dst_merchant_rate a
+        LEFT JOIN dst_router b ON a.router_id = b.id
+        WHERE a.merchant_id = #{merchantId}
+    </select>
+
+    <select id="ifExists" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM dst_merchant_rate a
+        WHERE a.merchant_id = #{merchantId}
+        AND a.router_id = #{routerId}
+    </select>
+
+</mapper>

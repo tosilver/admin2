@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.dao.TUserDao">
+    <sql id="Base_Column_List">
+        a.account,
+        a.userid,
+        a.pay_type,
+        a.status
+    </sql>
+
+    <sql id="Base_Where_Clause">
+        <where>
+            <choose>
+                <when test="status != null and status !='' ">
+                    AND a.status = #{status}
+                </when>
+                <otherwise>
+                    AND a.status != -1
+                </otherwise>
+            </choose>
+        </where>
+    </sql>
+
+    <select id="get" resultType="co.b4pay.admin.entity.TUser">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM t_user a where a.account = #{account}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT count(1) FROM t_user a
+        <include refid="Base_Where_Clause"/>
+    </select>
+
+    <select id="findList" resultType="co.b4pay.admin.entity.TUser">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM t_user a
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.account
+            </otherwise>
+        </choose>
+        <if test="pageSize &gt; 0">
+            LIMIT ${pageFirst}, ${pageSize}
+        </if>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO t_user (account, userid, pay_type, `status`)
+        VALUES (#{account}, #{userid}, #{payType}, #{status})
+    </insert>
+
+
+    <delete id="delete">
+        UPDATE t_user a
+        SET a.status = -1
+        WHERE a.account = #{account}
+    </delete>
+
+    <update id="updateStatus">
+        UPDATE t_user
+        SET status = #{status}
+        WHERE account = #{account}
+    </update>
+
+</mapper>

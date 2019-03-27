@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="../../webapp/META-INF/ehcache.xsd"
+         updateCheck="false" monitoring="autodetect"
+         dynamicConfig="true" name="defaultCache">
+
+    <diskStore path="java.io.tmpdir/dst-data-admin/default-cache"/>
+
+    <!--
+    Default Cache configuration. These settings will be applied to caches
+    created programmatically using CacheManager.add(String cacheName).
+    This element is optional, and using CacheManager.add(String cacheName) when
+    its not present will throw CacheException
+
+    The defaultCache has an implicit name "default" which is a reserved cache name.
+    -->
+    <defaultCache
+            maxElementsInMemory="1000"
+            eternal="false"
+            overflowToDisk="true"
+            timeToIdleSeconds="20"
+            timeToLiveSeconds="60"
+    />
+
+    <!-- 缓存 Admin -->
+    <cache name="Admin"
+           maxElementsInMemory="100"
+           maxElementsOnDisk="10000"
+           eternal="false"
+           timeToIdleSeconds="86400"
+           timeToLiveSeconds="86400"
+           overflowToDisk="false"
+           diskPersistent="false"
+    />
+
+    <!-- 缓存 Role -->
+    <cache name="Role"
+           maxElementsInMemory="1000"
+           maxElementsOnDisk="10000"
+           eternal="false"
+           timeToIdleSeconds="86400"
+           timeToLiveSeconds="86400"
+           overflowToDisk="false"
+           diskPersistent="false"
+    />
+
+    <!-- 缓存 Resource -->
+    <cache name="Resource"
+           maxElementsInMemory="1000"
+           maxElementsOnDisk="10000"
+           eternal="false"
+           timeToIdleSeconds="86400"
+           timeToLiveSeconds="86400"
+           overflowToDisk="false"
+           diskPersistent="false"
+    />
+
+    <!-- CarBrand缓存一天 -->
+    <cache name="CarBrand"
+           maxElementsInMemory="10000"
+           maxElementsOnDisk="10000"
+           eternal="false"
+           timeToIdleSeconds="86400"
+           timeToLiveSeconds="86400"
+           overflowToDisk="false"
+           diskPersistent="false"
+    />
+
+    <!-- CarModel缓存一天 -->
+    <cache name="CarModel"
+           maxElementsInMemory="10000"
+           maxElementsOnDisk="10000"
+           eternal="false"
+           timeToIdleSeconds="86400"
+           timeToLiveSeconds="86400"
+           overflowToDisk="false"
+           diskPersistent="false"
+    />
+
+    <!-- CarSerie缓存一天 -->
+    <cache name="CarSerie"
+           maxElementsInMemory="10000"
+           maxElementsOnDisk="10000"
+           eternal="false"
+           timeToIdleSeconds="86400"
+           timeToLiveSeconds="86400"
+           overflowToDisk="false"
+           diskPersistent="false"
+    />
+
+
+    <!-- 存放用户登录信息，过期时间 3600秒，可用ehache替换session功能 -->
+    <cache name="session"
+           maxElementsInMemory="1000"
+           maxElementsOnDisk="10000"
+           eternal="false"
+           timeToIdleSeconds="3600"
+           timeToLiveSeconds="0"
+           overflowToDisk="false"
+           diskPersistent="false"
+    />
+
+    <!-- 缓存5分钟 -->
+    <cache name="fiveMinutes"
+           maxElementsInMemory="1000"
+           maxElementsOnDisk="10000"
+           eternal="false"
+           timeToIdleSeconds="600"
+           timeToLiveSeconds="600"
+           overflowToDisk="true"
+           diskPersistent="true"
+    />
+
+    <!-- 缓存10分钟 -->
+    <cache name="tenMinutes"
+           maxElementsInMemory="1000"
+           maxElementsOnDisk="10000"
+           eternal="false"
+           timeToIdleSeconds="600"
+           timeToLiveSeconds="600"
+           overflowToDisk="true"
+           diskPersistent="true"
+    />
+
+    <!-- 缓存半小时 -->
+    <cache name="halfHour"
+           maxElementsInMemory="1000"
+           maxElementsOnDisk="10000"
+           eternal="false"
+           timeToIdleSeconds="1800"
+           timeToLiveSeconds="1800"
+           overflowToDisk="true"
+           diskPersistent="true"
+    />
+
+    <!-- 缓存一小时 -->
+    <cache name="oneHour"
+           maxElementsInMemory="1000"
+           maxElementsOnDisk="10000"
+           eternal="false"
+           timeToIdleSeconds="3600"
+           timeToLiveSeconds="3600"
+           overflowToDisk="true"
+           diskPersistent="true"
+    />
+
+    <!-- 缓存一天 -->
+    <cache name="oneDay"
+           maxElementsInMemory="1000"
+           maxElementsOnDisk="10000"
+           eternal="false"
+           timeToIdleSeconds="86400"
+           timeToLiveSeconds="86400"
+           overflowToDisk="true"
+           diskPersistent="true"
+    />
+
+    <!--     <cacheManagerPeerListenerFactory class="org.terracotta.ehcachedx.monitor.probe.ProbePeerListenerFactory" properties="monitorAddress=localhost, monitorPort=9889, memoryMeasurement=true" /> -->
+</ehcache>

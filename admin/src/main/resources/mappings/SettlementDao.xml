@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.dao.SettlementDao">
+    <sql id="Base_Column_List">
+        a.id,
+        a.merchant_id AS "merchant.id",
+        b.company AS "merchant.company",
+        a.settle_type AS "settleType",
+        a.account_type AS "accountType",
+        a.bank_account AS "bankAccount",
+        a.bank_name AS "bankName",
+        a.bank_nickname AS "bankNickname",
+        a.create_time AS "createTime",
+        a.update_time AS "updateTime"
+    </sql>
+
+    <sql id="Base_Join_Clause">
+        LEFT JOIN dst_merchant b ON a.merchant_id = b.id
+    </sql>
+
+    <sql id="Base_Where_Clause">
+        <where>
+            <if test="merchantIds != null">
+                AND a.merchant_id IN
+                <foreach collection="merchantIds" open="(" close=")" separator="," item="merchantId">
+                    #{merchantId, jdbcType=SMALLINT}
+                </foreach>
+            </if>
+            <if test="merchantId != null">
+                AND a.merchant_id = #{merchantId}
+            </if>
+            <if test="settleType != null">
+                AND a.settle_type = #{settleType}
+            </if>
+            <if test="accountType != null">
+                AND a.account_type = #{accountType}
+            </if>
+        </where>
+    </sql>
+
+    <select id="get" resultType="co.b4pay.admin.entity.Settlement">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_settlement a
+        <include refid="Base_Join_Clause"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT count(1)
+        FROM dst_settlement
+    </select>
+
+    <select id="findList" resultType="co.b4pay.admin.entity.Settlement">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_settlement a
+        <include refid="Base_Join_Clause"/>
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time
+            </otherwise>
+        </choose>
+        <if test="pageSize &gt; 0">
+            LIMIT ${pageFirst}, ${pageSize}
+        </if>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO dst_settlement (merchant_id,
+        settle_type,
+        account_type,
+        bank_account,
+        bank_name,
+        bank_nickname,
+        create_time,
+        update_time)
+        VALUES (#{merchant.id},
+        #{settleType},
+        #{accountType},
+        #{bankAccount},
+        #{bankName},
+        #{bankNickname},
+        now(),
+        now())
+    </insert>
+
+    <!--<insert id="insert">-->
+    <!--INSERT INTO dst_settlement-->
+    <!--(merchant_id,settle_type,account_type,bank_account,bank_name,bank_nickname,create_time,update_time)-->
+    <!--VALUES(#{merchant.id},#{settleType},#{accountType},#{bankAccount},#{bankName},#{bankNickname},#{updateTime},#{updateTime})-->
+    <!--</insert>-->
+
+    <update id="update">
+        UPDATE dst_settlement SET
+        <if test="settleType != null">
+            settle_type = #{settleType},
+        </if>
+        <if test="accountType != null">
+            account_type = #{accountType},
+        </if>
+        <if test="bankAccount != null">
+            bank_account = #{bankAccount},
+        </if>
+        <if test="bankName != null">
+            bank_name = #{bankName},
+        </if>
+        <if test="bankNickname != null">
+            bank_nickname = #{bankNickname},
+        </if>
+        update_time = now()
+        WHERE id = #{id}
+    </update>
+
+    <!--<update id="update">-->
+    <!--UPDATE dst_settlement SET-->
+    <!--<if test="settleType != null">-->
+    <!--settle_type = #{settleType},-->
+    <!--</if>-->
+    <!--<if test="accountType != null">-->
+    <!--account_type = #{accountType},-->
+    <!--</if>-->
+    <!--<if test="bankAccount != null">-->
+    <!--bank_account = #{bankAccount},-->
+    <!--</if>-->
+    <!--<if test="bankName != null">-->
+    <!--bank_name = #{bankName},-->
+    <!--</if>-->
+    <!--<if test="bankNickname != null">-->
+    <!--bank_nickname = #{bankNickname},-->
+    <!--</if>-->
+    <!--update_time = #{updateTime}-->
+    <!--WHERE id = #{id}-->
+    <!--</update>-->
+
+    <delete id="delete">
+        UPDATE dst_settlement a
+        SET a.status = -1
+        WHERE a.id = #{id}
+    </delete>
+
+    <select id="findByMerchantId" parameterType="java.lang.String" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM dst_settlement a
+        WHERE a.merchant_id = #{merchantId}
+    </select>
+
+</mapper>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.dao.ApkFileDao">
+    <sql id="Base_Column_List">
+        a.id,
+        a.name,
+        a.version,
+        a.file_url AS "fileUrl",
+        a.status,
+        a.create_time as "createTime",
+        a.update_time as "updateTime"
+    </sql>
+
+    <sql id="Base_Where_Clause">
+        <where>
+            <choose>
+                <when test="status != null">
+                    AND a.status = #{status}
+                </when>
+                <otherwise>
+                    AND a.status >= -1
+                </otherwise>
+            </choose>
+        </where>
+    </sql>
+
+    <select id="get" resultType="co.b4pay.admin.entity.ApkFile">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_apk_file a
+        WHERE a.id = #{id}
+    </select>
+    <select id="findByVersion" resultType="co.b4pay.admin.entity.ApkFile">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_apk_file a
+        WHERE a.version = #{version} AND a.name = #{name}
+    </select>
+    <select id="findList" resultType="co.b4pay.admin.entity.ApkFile">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_apk_file a
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+        <if test="pageSize &gt; 0">
+            LIMIT ${pageFirst}, ${pageSize}
+        </if>
+    </select>
+
+    <insert id="insert">
+        insert into dst_apk_file (name, version, file_url, status, create_time)
+        values (#{name}, #{version}, #{fileUrl}, #{status}, now())
+    </insert>
+
+    <update id="update">
+        update dst_apk_file
+        set name = #{name},
+        version = #{version},
+        file_url = #{fileUrl},
+        status = #{status},
+        update_time = now()
+        where id = #{id}
+    </update>
+
+    <delete id="delete">
+        update dst_apk_file
+        set status = -1
+        where id = #{id}
+    </delete>
+    <select id="count" resultType="int">
+        SELECT count(1) FROM dst_apk_file a
+        <include refid="Base_Where_Clause"/>
+    </select>
+</mapper>

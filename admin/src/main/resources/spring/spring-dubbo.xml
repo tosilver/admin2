@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <!-- 具体的实现bean -->
+    <!-- <bean id="demoService" class="com.unj.dubbotest.provider.DemoServiceImpl" /> -->
+
+    <!-- 提供方应用信息，用于计算依赖关系 -->
+    <!-- <dubbo:application name="xixi_provider"  /> -->
+
+    <!-- 使用multicast广播注册中心暴露服务地址   
+    <dubbo:registry address="multicast://224.5.6.7:1234" />-->
+
+    <!-- 使用zookeeper注册中心暴露服务地址 -->
+    <!-- <dubbo:registry address="zookeeper://127.0.0.1:2181" /> -->
+
+    <!-- 用dubbo协议在20880端口暴露服务 -->
+    <!-- <dubbo:protocol name="dubbo" port="20880" /> -->
+
+    <!-- 声明需要暴露的服务接口 -->
+    <!-- <dubbo:model interface="com.unj.dubbotest.provider.DemoService" ref="demoService" /> -->
+
+    <!--<dubbo:application name="dst-data-admin" />-->
+
+    <!-- <dubbo:registry protocol="zookeeper" address="${dubbo.registry.address}" port="${dubbo.registry.port}" check="false" subscribe="true" register="false" />
+     <dubbo:reference id="merchantServiceFacade" interface="co.b4pay.admin.facade.MerchantServiceFacade" check="false" timeout="10000"/>
+ &lt;!&ndash;
+     <dubbo:reference id="accountServiceFacade" interface="co.b4pay.admin.facade.AccountServiceFacade" check="false" timeout="10000"/>
+ &ndash;&gt;
+     <dubbo:reference id="rechargeServiceFacade" interface="co.b4pay.admin.facade.RechargeServiceFacade" check="false" timeout="10000"/>
+     <dubbo:reference id="channelServiceFacade" interface="co.b4pay.admin.facade.ChannelServiceFacade" check="false" timeout="10000"/>
+     <dubbo:reference id="consumeServiceFacade" interface="co.b4pay.admin.facade.ConsumeServiceFacade" check="false" timeout="10000"/>
+     <dubbo:reference id="functionServiceFacade" interface="co.b4pay.admin.facade.FunctionServiceFacade" check="false" timeout="10000"/>
+     <dubbo:reference id="ipWhitelistServiceFacade" interface="co.b4pay.admin.facade.IpWhitelistServiceFacade" check="false" timeout="10000"/>
+     <dubbo:reference id="partnerServiceFacade" interface="co.b4pay.admin.facade.PartnerServiceFacade" check="false" timeout="10000"/>
+     <dubbo:reference id="merchantFunctionServiceFacade" interface="co.b4pay.admin.facade.MerchantFunctionServiceFacade" check="false" timeout="10000"/>
+     <dubbo:reference id="functionParameterServiceFacade" interface="co.b4pay.admin.facade.FunctionParameterServiceFacade" check="false" timeout="10000"/>
+ -->
+    <!-- 扫描注解包路径，多个包用逗号分隔，不填pacakge表示扫描当前ApplicationContext中所有的类 -->
+    <!--<dubbo:annotation package="co.b4pay.admin.service, co.b4pay.admin.controller" />
+    &lt;!&ndash; 加入spring注解扫描 &ndash;&gt;
+    <context:component-scan base-package="co.b4pay.admin.facade">
+        <context:include-filter type="annotation" expression="com.alibaba.dubbo.config.annotation.Reference" />
+    </context:component-scan>-->
+
+</beans>

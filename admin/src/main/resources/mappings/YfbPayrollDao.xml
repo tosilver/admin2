@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.dao.YfbPayrollDao">
+
+    <sql id="Base_Column_List">
+        a.id,
+        a.merchant_id AS "merchantId",
+        a.company,
+        a.batch_no AS "batchNo",
+        a.batch_order_name AS "batchOrderName",
+        a.total_num AS "totalNum",
+        a.total_amount AS "totalAmount",
+        a.notify_url AS "notifyUrl",
+        a.router_id AS "routerId",
+        a.goods_type AS "goodsType",
+        a.status,
+        a.content,
+        a.create_time AS "createTime",
+        a.update_time AS "updateTime"
+    </sql>
+
+
+    <sql id="Base_Where_Clause">
+        <where>
+            <choose>
+                <when test="status != null">
+                    AND a.status = #{status}
+                </when>
+                <otherwise>
+                    AND a.status &gt; -2
+                </otherwise>
+            </choose>
+            <if test="merchantIds !=null">
+                AND FIND_IN_SET(a.merchant_id,#{merchantIds})
+            </if>
+            <if test="merchantId != null">
+                AND a.merchant_id = #{merchantId}
+            </if>
+            <if test="batchNo !=null">
+                AND batch_no LIKE concat('%', #{batchNo}, '%')
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND a.create_time &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND a.create_time &lt;= #{endDate}
+            </if>
+            <if test="currentYear != null">
+                AND YEAR (a.create_time) = #{currentYear}
+            </if>
+            <if test="currentMonth != null">
+                AND MONTH (a.create_time) = #{currentMonth}
+            </if>
+            <if test="currentDay != null">
+                AND DAY (a.create_time) = #{currentDay}
+            </if>
+        </where>
+    </sql>
+
+
+    <select id="get" resultType="co.b4pay.admin.entity.YfbPayroll">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_yfb_payroll a
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT count(1) FROM dst_yfb_payroll a
+        <include refid="Base_Where_Clause"/>
+    </select>
+
+    <select id="findByStatus" resultType="co.b4pay.admin.entity.YfbPayroll">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_yfb_payroll a
+        WHERE a.status = #{status}
+    </select>
+
+
+    <select id="findByBatchNo" resultType="co.b4pay.admin.entity.YfbPayroll">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_yfb_payroll a
+        WHERE a.batch_no = #{batchNo}
+    </select>
+
+    <select id="sumAmount" resultType="java.lang.Double">
+        SELECT SUM(a.amount) FROM dst_yfb_payroll a
+        <include refid="Base_Where_Clause"/>
+    </select>
+
+    <select id="findList" resultType="co.b4pay.admin.entity.YfbPayroll">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_yfb_payroll a
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+        <if test="pageSize &gt; 0">
+            LIMIT ${pageFirst},${pageSize}
+        </if>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO dst_yfb_payroll (merchant_id,
+        company,
+        batch_no,
+        batch_order_name,
+        total_num,
+        total_amount,
+        notify_url,
+        router_id,
+        goods_type,
+        status,
+        content,
+        create_time)
+        VALUES (#{merchantId},
+        #{company},
+        #{batchNo},
+        #{batchOrderName},
+        #{totalNum},
+        #{totalAmount},
+        #{notifyUrl},
+        #{routerId},
+        #{goodsType},
+        #{status},
+        #{content},
+        now())
+    </insert>
+    <!--<insert id="insert">-->
+    <!--INSERT INTO dst_yfb_payroll(merchant_id,company,batch_no,batch_order_name,total_num,total_amount,notify_url,router_id,goods_type,status,create_time)-->
+    <!--VALUES(#{merchantId},#{company}, #{batchNo}, #{batchOrderName},#{totalNum}, #{totalAmount}, #{notifyUrl}, #{routerId}, #{goodsType},#{status}, #{updateTime})-->
+    <!--</insert>-->
+
+
+    <!--<update id="update">-->
+    <!--UPDATE dst_yfb_payroll-->
+    <!--<set>-->
+    <!--<if test="status != null">-->
+    <!--status = #{status},-->
+    <!--</if>-->
+    <!--<if test="updateTime != null">-->
+    <!--update_time =now(),-->
+    <!--</if>-->
+    <!--</set>-->
+    <!--WHERE id = #{id}-->
+    <!--</update>-->
+
+    <update id="update">
+        UPDATE dst_yfb_payroll
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="content != null">
+                content = #{content},
+            </if>
+            <if test="updateTime != null">
+                update_time = now()
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        update dst_yfb_payroll
+        set status = -2
+        where id = #{id}
+    </delete>
+</mapper>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.dao.RouterDao">
+    <sql id="Base_Column_List">
+        a.id,
+        a.name,
+        a.version,
+        a.status,
+        a.create_time AS "createTime",
+        a.update_time AS "updateTime"
+    </sql>
+
+    <sql id="Base_Where_Clause">
+        <where>
+            <choose>
+                <when test="status != null">
+                    AND a.status = #{status}
+                </when>
+                <otherwise>
+                    AND a.status &gt; 0
+                </otherwise>
+            </choose>
+            <if test="name != null">
+                AND a.name LIKE concat('%', #{name}, '%')
+            </if>
+        </where>
+    </sql>
+
+    <select id="count" resultType="int">
+        SELECT count(1) FROM dst_router a
+        <include refid="Base_Where_Clause"/>
+    </select>
+
+    <select id="get" resultType="co.b4pay.admin.entity.Router">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_router a
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="findList" resultType="co.b4pay.admin.entity.Router">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_router a
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+        <if test="pageSize &gt; 0">
+            LIMIT ${pageFirst}, ${pageSize}
+        </if>
+    </select>
+
+    <insert id="insert">
+        <selectKey resultType="string" keyProperty="id" order="AFTER">
+            select @@IDENTITY as id
+        </selectKey>
+        insert into dst_router( id, name, version, status, create_time, update_time)
+        values( #{id}, #{name}, #{version}, 1, now(), now())
+    </insert>
+
+    <!--<insert id="insert">-->
+    <!--<selectKey resultType="string" keyProperty="id" order="AFTER">-->
+    <!--select @@IDENTITY as id-->
+    <!--</selectKey>-->
+    <!--insert into dst_router( id, name, version, status, create_time, update_time)-->
+    <!--values( #{id}, #{name}, #{version}, 1, #{createTime}, #{updateTime})-->
+    <!--</insert>-->
+</mapper>

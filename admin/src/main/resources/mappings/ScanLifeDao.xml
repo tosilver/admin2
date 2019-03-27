@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.dao.ScanLifeDao">
+    <sql id="Base_Column_List">
+        a.id,
+        a.merchant_id AS "merchant.id",
+        b.company AS "merchant.company",
+        a.channel_id AS "channel.id",
+        d.name AS "channel.name",
+        a.name,
+        a.label,
+        d.router_id AS "router.id",
+        (SELECT `name` FROM dst_router WHERE id = d.router_id limit 1) AS "router.name",
+        a.picture_url AS "pictureUrl",
+        a.network_url AS "networkUrl",
+        a.folder_url AS "folderurl",
+        a.status,
+        a.create_time AS "createTime",
+        a.update_time AS "updateTime"
+    </sql>
+
+    <sql id="Base_Where_Clause">
+        <where>
+            <choose>
+                <when test="status != null">
+                    AND a.status = #{status}
+                </when>
+                <otherwise>
+                    AND a.status &gt; 0
+                </otherwise>
+            </choose>
+            <if test="label != null">
+                AND a.label = #{label}
+            </if>
+            <if test="name !=null">
+                AND a.name = #{name}
+            </if>
+            <if test="merchantId != null">
+                AND a.merchant_id = #{merchantId}
+            </if>
+            <if test="channelId != null">
+                AND a.channel_id = #{channelId}
+            </if>
+            <if test="routerId != null">
+                AND a.channel_id IN (SELECT r.id FROM dst_channel r WHERE r.router_id = #{routerId})
+            </if>
+            <if test="merchantIds != null">
+                AND FIND_IN_SET(a.merchant_id,#{merchantIds})
+            </if>
+        </where>
+    </sql>
+    <!--<sql id="Base_Where_ClauseBatch">-->
+    <!--<where>-->
+    <!--<choose>-->
+    <!--<when test="status != null">-->
+    <!--AND a.status = #{status}-->
+    <!--</when>-->
+    <!--<otherwise>-->
+    <!--AND a.status &gt; 0-->
+    <!--</otherwise>-->
+    <!--</choose>-->
+    <!--<if test="label != null">-->
+    <!--AND a.label = #{label}-->
+    <!--</if>-->
+    <!--<if test="merchantId != null">-->
+    <!--AND a.merchant_id = #{merchantId}-->
+    <!--</if>-->
+    <!--<if test="channelId != null">-->
+    <!--AND a.channel_id = #{channelId}-->
+    <!--</if>-->
+    <!--<if test="routerId != null">-->
+    <!--AND a.router_id = #{routerId}-->
+    <!--</if>-->
+    <!--</where>-->
+    <!--</sql>-->
+
+    <sql id="Base_Join_Clause">
+        LEFT JOIN dst_merchant b ON b.id = a.merchant_id
+        LEFT JOIN dst_channel d ON d.id = a.channel_id
+    </sql>
+    <select id="count" resultType="int">
+        SELECT count(1) FROM dst_scan_life a
+        <include refid="Base_Where_Clause"/>
+    </select>
+
+    <select id="get" resultType="co.b4pay.admin.entity.ScanLife">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_scan_life a
+        <include refid="Base_Join_Clause"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="findList" resultType="co.b4pay.admin.entity.ScanLife">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_scan_life a
+        <include refid="Base_Join_Clause"/>
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+        <if test="pageSize &gt; 0">
+            LIMIT ${pageFirst}, ${pageSize}
+        </if>
+    </select>
+
+    <insert id="insert">
+        <selectKey resultType="string" keyProperty="id" order="AFTER">
+            select @@IDENTITY as id
+        </selectKey>
+        insert into
+        dst_scan_life(id,merchant_id,router_id,channel_id,name,label,picture_url,network_url,folder_url,status,create_time)
+        values(
+        #{id},#{merchant.id},#{router.id},#{channel.id},#{name},#{label},#{pictureUrl},#{networkUrl},#{folderUrl}#{status},now())
+    </insert>
+    <delete id="delete">
+        DELETE
+        FROM dst_scan_life a
+        WHERE a.folder_url = #{id}
+    </delete>
+    <update id="update">
+        UPDATE dst_scan_life
+        <set>
+            <if test="routerId != null">
+                router_id = #{routerId},
+            </if>
+            <if test="cardNo != null">
+                card_no = #{cardNo},
+            </if>
+            <if test="channelId != null">
+                channel_id = #{channelId},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+</mapper>

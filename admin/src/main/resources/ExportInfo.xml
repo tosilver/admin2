@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<excel id="consume" code="consume" name="orderInfo">
+    <colGroup>
+        <col index="A" width='36em'></col>
+        <col index="B" width='17em'></col>
+        <col index="C" width='17em'></col>
+        <col index="D" width='17em'></col>
+        <col index="E" width='17em'></col>
+        <col index="F" width='17em'></col>
+        <col index="G" width='35em'></col>
+    </colGroup>
+    <title>
+        <tr height="20">
+            <td rowSpan="1" colSpan="14" value="订单提取"/>
+        </tr>
+    </title>
+    <thead>
+        <tr height="16">
+            <th value="订单编号"/>
+            <th value="产品名"/>
+            <th value="到账金额"/>
+            <th value="交易金额"/>
+            <th value="支付状态"/>
+            <th value="调用结果"/>
+            <th value="调用时间"/>
+
+        </tr>
+    </thead>
+    <tbody>
+        <tr height="16" repeat="14">
+            <td type="string" property="merchantOrderNo"/>
+            <td type="string" property="name"/>
+            <td type="string" property="accountAmount" format="##0.00"/>
+            <td type="string" property="totalAmount" format="##0.00"/>
+            <td type="string" property="tradeState"/>
+            <td type="string" property="status"/>
+            <td type="string" property="createTime"/>
+        </tr>
+    </tbody>
+</excel>

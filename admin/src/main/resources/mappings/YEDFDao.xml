@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.dao.YEDFDao">
+    <sql id="Base_Column_List">
+        a.id,
+        a.merchant_id AS "merchant.id",
+        b.company AS "merchant.company",
+        b.balance AS "balance",
+        a.channel_id AS "channel.id",
+        d.name AS "channel.name",
+        d.router_id AS "router.id",
+        (SELECT `name` FROM dst_router WHERE id = d.router_id limit 1) AS "router.name",
+        a.total_amount AS "totalAmount",
+        a.request,
+        a.status,
+        a.create_time AS "createTime",
+        a.update_time AS "updateTime",
+        a.payment_time AS "paymentTime",
+        a.merchant_order_no AS "merchantOrderNo",
+        a.pay_order_no AS "payOrderNo",
+        a.cost_rate AS "costRate",
+        a.pay_cost AS "payCost",
+        a.service_charge AS "serviceCharge",
+        a.account_amount AS "accountAmount",
+        a.trade_state AS "tradeState",
+        a.bank_card_no AS "bankCardNo",
+        a.bank_name AS "bankName",
+        a.bank_short_name AS "bankShortName",
+        a.customer_name AS "customerName",
+        b.secret_key AS "merchant.secretKey"
+    </sql>
+
+    <sql id="Base_Join_Clause">
+        LEFT JOIN dst_merchant b ON b.id = a.merchant_id
+        LEFT JOIN dst_channel d ON d.id = a.channel_id
+    </sql>
+    <sql id="Base_Where_Clause">
+        <where>
+            AND 1=1
+            <choose>
+                <when test="status != null and status!=''">
+                    AND a.status = #{status}
+                </when>
+                <otherwise>
+                    AND a.status &gt; 0
+                </otherwise>
+            </choose>
+            <if test="transinId != null and transinId != ''">
+                AND a.transin_id = #{transinId}
+            </if>
+            <if test="tradeState != null and tradeState != ''">
+                AND a.trade_state = #{tradeState}
+            </if>
+            <if test="merchantOrderNo != null and merchantOrderNo != ''">
+                AND a.merchant_order_no LIKE concat('%', #{merchantOrderNo}, '%')
+            </if>
+            <if test="merchantIds != null and merchantIds!=''">
+                AND FIND_IN_SET(a.merchant_id,#{merchantIds})
+            </if>
+            <if test="merchantId != null and merchantId!=''">
+                AND a.merchant_id = #{merchantId}
+            </if>
+            <if test="channelId != null and channelId!=''">
+                AND a.channel_id = #{channelId}
+            </if>
+            <if test="routerId != null and routerId !=''">
+                AND a.channel_id IN (SELECT r.id FROM dst_channel r WHERE r.router_id = #{routerId})
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND a.update_time &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND a.update_time &lt;= #{endDate}
+            </if>
+            <if test="currentYear != null">
+                AND YEAR (a.update_time) = #{currentYear}
+            </if>
+            <if test="currentMonth != null">
+                AND MONTH (a.update_time) = #{currentMonth}
+            </if>
+            <if test="currentDay != null">
+                AND DAY (a.update_time) = #{currentDay}
+            </if>
+        </where>
+    </sql>
+
+    <select id="count" resultType="int">
+        SELECT count(1) FROM dst_yedf_payroll a
+        <include refid="Base_Where_Clause"/>
+    </select>
+
+    <select id="sumMoney" resultType="java.lang.Double">
+        SELECT SUM(a.total_amount) FROM dst_yedf_payroll a
+        <include refid="Base_Where_Clause"/>
+    </select>
+
+    <select id="sumAccountMoney" resultType="java.lang.Double">
+        SELECT SUM(a.account_amount) FROM dst_yedf_payroll a
+        <include refid="Base_Where_Clause"/>
+        AND a.trade_state > 0
+    </select>
+    <select id="accountCount" resultType="int">
+        SELECT count(1) FROM dst_yedf_payroll a
+        <include refid="Base_Where_Clause"/>
+        AND a.trade_state > 0
+    </select>
+
+    <select id="getSuccessRate" resultType="java.lang.Double">
+        SELECT CONVERT(successTotal/total*100,DECIMAL(15,2))
+        FROM (
+        SELECT SUM(1) total,
+        SUM(CASE WHEN a.trade_state > 0 THEN 1 ELSE 0 END ) successTotal
+        FROM dst_yedf_payroll a
+        <include refid="Base_Where_Clause"/>
+        ) temp
+    </select>
+
+    <select id="get" resultType="co.b4pay.admin.entity.YEDFPayroll">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_yedf_payroll a
+        <include refid="Base_Join_Clause"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="findList" resultType="co.b4pay.admin.entity.YEDFPayroll">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_yedf_payroll a
+        <include refid="Base_Join_Clause"/>
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+        <if test="pageSize &gt; 0">
+            LIMIT ${pageFirst}, ${pageSize}
+        </if>
+    </select>
+
+
+    <select id="findListCount" resultType="co.b4pay.admin.entity.YEDFPayroll">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_yedf_payroll a
+        <include refid="Base_Join_Clause"/>
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <select id="findByDerived" resultType="co.b4pay.admin.entity.YEDFPayroll">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_yedf_payroll a
+        <include refid="Base_Join_Clause"/>
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="insert">
+        <selectKey resultType="string" keyProperty="id" order="AFTER">
+            select @@IDENTITY as id
+        </selectKey>
+        insert into dst_yedf_payroll(merchant_id, channel_id , total_amount, request, status, remark,
+        create_time,
+        update_time,merchant_order_no,pay_order_no,cost_rate,pay_cost,service_charge,account_amount,trade_state,payment_time)
+        values(#{merchant.id}, #{channel.id},#{totalAmount}, #{request},#{status},
+        #{remark}, now(), now(), #{merchantOrderNo}, #{payOrderNo}, #{costRate}, #{payCost}, #{serviceCharge},
+        #{accountAmount}, #{tradeState},#{paymentTime})
+    </insert>
+
+    <update id="updateStatus">
+        UPDATE dst_yedf_payroll
+        SET trade_state = #{status},
+        create_time = #{nowDate},
+        total_amount = #{amount},
+        account_amount = #{amount},
+        payment_time = #{paymentTime}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateTrade">
+        UPDATE dst_job_trade djr
+        SET djr.content = #{content},
+        djr.status = #{status},
+        djr.update_time = #{nowDate},
+        djr.exec_time = #{nowDate}
+        WHERE id = #{id}
+    </update>
+
+    <select id="findAdminChannel" resultType="String">
+        SELECT channel_id
+        FROM admin_channel
+        WHERE admin_id = #{id}
+    </select>
+
+    <select id="findJobTradeById" resultType="co.b4pay.admin.entity.JobTrade">
+        select *
+        from dst_job_trade
+        where id = #{id}
+    </select>
+
+</mapper>

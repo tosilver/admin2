@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.dao.MerchantDao">
+    <sql id="Base_Column_List">
+        a.id,
+        a.company,
+        a.contacts,
+        a.balance,
+        a.account_frozen AS "accountFrozen",
+        a.account_balance AS "accountBalance",
+        a.Withdraw_balance AS "WithdrawBalance",
+        a.Withdraw_frozen AS "WithdrawFrozen",
+        a.id_card AS "idCard",
+        a.tel,
+        a.province_id AS "province.provinceId",
+        b.province AS "province.province",
+        a.city_id AS "city.cityId",
+        c.city AS "city.city",
+        a.area_id AS "area.areaId",
+        d.area AS "area.area",
+        a.address,
+        a.status,
+        a.create_time AS "createTime",
+        a.update_time AS "updateTime"
+    </sql>
+
+    <sql id="Base_Column_List2">
+        a.id,
+        a.company,
+        a.contacts,
+        a.balance,
+        a.account_frozen AS "accountFrozen",
+        a.account_balance AS "accountBalance",
+        a.Withdraw_balance AS "withdrawBalance",
+        a.Withdraw_frozen AS "withdrawFrozen",
+        a.id_card AS "idCard",
+        a.tel,
+        a.province_id AS "province.provinceId",
+        b.province AS "province.province",
+        a.city_id AS "city.cityId",
+        c.city AS "city.city",
+        a.area_id AS "area.areaId",
+        d.area AS "area.area",
+        a.secret_key AS "secretKey",
+        a.balance AS "balance",
+        a.account_frozen AS "accountFrozen",
+        a.address,
+        a.status,
+        a.create_time AS "createTime",
+        a.update_time AS "updateTime",
+        f.settle_type AS "settlement.settleType",
+        f.account_type AS "settlement.accountType",
+        f.bank_account AS "settlement.bankAccount",
+        f.bank_name AS "settlement.bankName",
+        f.bank_nickname AS "settlement.bankNickname"
+    </sql>
+
+    <sql id="Base_Join_Clause">
+        LEFT JOIN sys_provinces b ON a.province_id = b.provinceid
+        LEFT JOIN sys_cities c ON a.city_id = c.cityid
+        LEFT JOIN sys_areas d ON a.area_id = d.areaid
+    </sql>
+    <sql id="Base_Join_Clause2">
+        LEFT JOIN sys_provinces b ON a.province_id = b.provinceid
+        LEFT JOIN sys_cities c ON a.city_id = c.cityid
+        LEFT JOIN sys_areas d ON a.area_id = d.areaid
+        LEFT JOIN dst_settlement f ON a.id = f.merchant_id
+    </sql>
+
+    <sql id="Base_Where_Clause">
+        <where>
+            <choose>
+                <when test="status != null">
+                    AND a.status = #{status}
+                </when>
+                <otherwise>
+                    AND a.status &gt; 0
+                </otherwise>
+            </choose>
+            <if test="merchantIds != null and merchantIds!=''">
+                AND a.id IN
+                <foreach collection="merchantIds" open="(" close=")" separator="," item="merchantId">
+                    #{merchantId, jdbcType=SMALLINT}
+                </foreach>
+            </if>
+            <if test="provinceId != null ">
+                AND a.province_id = #{provinceId}
+            </if>
+            <if test="company != null and company!=null">
+                AND a.company LIKE concat('%', #{company}, '%')
+            </if>
+            <if test="mobile != null">
+                AND a.tel LIKE concat('%', #{mobile}, '%')
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND a.create_time &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND a.create_time &lt;= #{endDate}
+            </if>
+            <if test="currentYear != null">
+                AND YEAR (a.create_time) = #{currentYear}
+            </if>
+            <if test="currentMonth != null">
+                AND MONTH (a.create_time) = #{currentMonth}
+            </if>
+            <if test="currentDay != null">
+                AND DAY (a.create_time) = #{currentDay}
+            </if>
+            <!--<if test="merIds != null and merIds = ''">-->
+            <!--AND  FIND_IN_SET(a.id, #{merIds})-->
+            <!--</if>-->
+        </where>
+    </sql>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(1) FROM dst_merchant a
+        <include refid="Base_Join_Clause"/>
+        <include refid="Base_Where_Clause"/>
+    </select>
+
+    <select id="findList" resultType="co.b4pay.admin.entity.Merchant">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_merchant a
+        <include refid="Base_Join_Clause"/>
+        <include refid="Base_Where_Clause"/>
+        <!--<if test="merIds != null and merIds = ''">-->
+        <!--AND  FIND_IN_SET(a.id, #{merIds})-->
+        <!--</if>-->
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+        <if test="pageSize &gt; 0">
+            LIMIT ${pageFirst}, ${pageSize}
+        </if>
+    </select>
+
+    <select id="get" resultType="co.b4pay.admin.entity.Merchant">
+        SELECT
+        <include refid="Base_Column_List2"/>
+        FROM dst_merchant a
+        <include refid="Base_Join_Clause2"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <!--<insert id="insert">-->
+    <!--<selectKey resultType="string" keyProperty="id" order="AFTER">-->
+    <!--select @@IDENTITY as id-->
+    <!--</selectKey>-->
+    <!--insert into dst_merchant( company, contacts , id_card, tel, province_id, city_id, area_id, address,balance, status, create_time, update_time)-->
+    <!--values( #{company}, #{contacts}, #{idCard}, #{tel},  #{province.provinceId}, #{city.cityId}, #{area.areaId}, #{address},#{balance}, 1, now(), now())-->
+    <!--</insert>-->
+    <insert id="insert">
+        <selectKey resultType="string" keyProperty="id" order="AFTER">
+            select @@IDENTITY as id
+        </selectKey>
+        insert into dst_merchant( company, contacts , id_card, tel, province_id, city_id, area_id, address,balance,account_frozen,
+        account_balance,withdraw_balance,withdraw_frozen,
+        status, create_time, update_time)
+        values( #{company}, #{contacts}, #{idCard}, #{tel}, #{province.provinceId}, #{city.cityId}, #{area.areaId},
+        #{address},#{balance},#{accountFrozen},#{accountBalance},#{withdrawBalance},#{withdrawFrozen} ,1, now(), now())
+    </insert>
+
+    <update id="update">
+        UPDATE dst_merchant SET
+        <if test="company != null">
+            company = #{company},
+        </if>
+        <if test="contacts != null">
+            contacts = #{contacts},
+        </if>
+        <if test="idCard != null">
+            id_card = #{idCard},
+        </if>
+        <if test="tel != null">
+            tel = #{tel},
+        </if>
+        <if test="secretKey != null">
+            secret_key = #{secretKey},
+        </if>
+        <if test="province != null">
+            province_id = #{province.provinceId},
+        </if>
+        <if test="city != null">
+            city_id = #{city.cityId},
+        </if>
+        <if test="area != null">
+            area_id = #{area.areaId},
+        </if>
+        <if test="balance != null">
+            balance = #{balance},
+        </if>
+        <if test="accountFrozen != null">
+            account_frozen = #{accountFrozen},
+        </if>
+        <if test="accountBalance != null">
+            account_balance = #{accountBalance},
+        </if>
+        <if test="withdrawBalance != null">
+            withdraw_balance = #{withdrawBalance},
+        </if>
+        <if test="withdrawFrozen != null">
+            withdraw_frozen = #{withdrawFrozen},
+        </if>
+        <if test="status != null">
+            status = #{status},
+        </if>
+
+        update_time = now()
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE dst_merchant
+        SET status = #{status},
+        update_time = now()
+        WHERE id = #{id}
+    </update>
+
+    <select id="findByCompany" parameterType="java.lang.String" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM dst_merchant a
+        WHERE a.company = #{company}
+    </select>
+
+    <select id="findByBalance" parameterType="java.lang.String" resultType="java.math.BigDecimal">
+        SELECT balance
+        FROM dst_merchant a
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="findAll" parameterType="java.lang.String" resultType="co.b4pay.admin.entity.Merchant">
+        SELECT *
+        FROM dst_merchant a
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="findByAdminMerchant" resultType="co.b4pay.admin.entity.Merchant">
+        SELECT *
+        FROM dst_merchant
+        WHERE FIND_IN_SET(id, #{id});
+    </select>
+</mapper>

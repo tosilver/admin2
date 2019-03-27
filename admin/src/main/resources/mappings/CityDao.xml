@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.dao.CityDao">
+    <sql id="Base_Column_List">
+        a.id,
+        a.cityid AS "cityId",
+        a.city,
+        a.provinceid AS "provinceId"
+    </sql>
+
+    <!--<sql id="Base_Where_Clause">
+	</sql>-->
+
+    <select id="count" resultType="int">
+        SELECT count(1)
+        FROM sys_cities a
+    </select>
+
+    <select id="findList" resultType="co.b4pay.admin.entity.City">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM sys_cities a
+        <if test="pageSize &gt; 0">
+            LIMIT ${pageFirst}, ${pageSize}
+        </if>
+    </select>
+
+    <select id="get" resultType="co.b4pay.admin.entity.City">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM sys_cities a
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="getByProvinceId" parameterType="java.lang.String" resultType="co.b4pay.admin.entity.City">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM sys_cities a
+        WHERE a.provinceid = #{provinceId}
+    </select>
+
+    <select id="getByCity" resultType="co.b4pay.admin.entity.City">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM sys_cities a
+        WHERE a.provinceid = #{provinceId}
+        AND a.city LIKE concat('', #{city}, '%')
+    </select>
+
+</mapper>

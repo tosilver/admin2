@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.dao.OrderDao">
+    <sql id="Base_Column_List">
+        a.orderid AS "OrderId",
+        a.order_money AS "orderMoney",
+        a.account,
+        a.memo,
+        a.qrcode,
+        a.create_time AS "createTime",
+        a.update_time AS "updateTime",
+        a.pay_type AS "payType",
+        a.pay_time AS "payTime",
+        a.pay_status AS "payStatus",
+        a.need_money AS "needMoney",
+        a.payed_money AS "payedMoney",
+        a.notify_url AS "notifyUrl",
+        a.text1
+    </sql>
+
+    <sql id="Base_Where_Clause">
+        <where>
+            <choose>
+                <when test="payStatus != null">
+                    AND a.pay_status = #{payStatus}
+                </when>
+                <otherwise>
+                    AND a.pay_status &gt; -2
+                </otherwise>
+            </choose>
+            <if test="account != null and account != ''">
+                AND a.account = #{account}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND a.create_time &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND a.create_time &lt;= #{endDate}
+            </if>
+        </where>
+    </sql>
+
+    <select id="get" resultType="co.b4pay.admin.entity.Order">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM t_order a
+        WHERE a.orderid = #{orderid}
+    </select>
+
+    <select id="findList" resultType="co.b4pay.admin.entity.Order">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM t_order a
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+        <if test="pageSize &gt; 0">
+            LIMIT ${pageFirst}, ${pageSize}
+        </if>
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT count(1) FROM t_order a
+        <include refid="Base_Where_Clause"/>
+    </select>
+
+    <select id="sumMoney" resultType="java.lang.Double">
+        SELECT SUM(a.order_money) FROM t_order a
+        <include refid="Base_Where_Clause"/>
+    </select>
+
+    <select id="sumAccountMoney" resultType="java.lang.Double">
+        SELECT SUM(a.payed_money) FROM t_order a
+        <include refid="Base_Where_Clause"/>
+    </select>
+
+    <select id="sumAccountCount" resultType="int">
+        SELECT count(a.payed_money) FROM t_order a
+        <include refid="Base_Where_Clause"/>
+    </select>
+
+    <update id="update">
+        UPDATE t_order a SET
+        <if test="status != null">
+            a.pay_status = #{status},
+        </if>
+        update_time = now(),
+        payed_money = #{payedMoney}
+        WHERE a.orderid = #{orderid}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE t_order a
+        SET a.pay_status = #{status},
+        a.payed_money = #{payedMoney},
+        a.update_time = now(),
+        a.pay_time = now()
+        WHERE a.orderid = #{orderid}
+    </update>
+
+
+</mapper>

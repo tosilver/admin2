@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.dao.WithdrawDao">
+    <sql id="Base_Column_List">
+        a.id,
+        a.merchant_id AS "merchantId",
+        a.trade_no AS "tradeNo",
+        a.merchant_company AS "merchantCompany",
+        a.card_no AS "cardNo",
+        a.bank_name AS "bankName",
+        a.customer_name AS "customerName",
+        a.amount,
+        a.status,
+        a.create_time AS "createTime",
+        a.update_time AS "updateTime",
+        a.appTime AS "appTime"
+    </sql>
+    <sql id="Base_Join_Clause">
+        LEFT JOIN dst_merchant b ON b.id = a.merchant_id
+    </sql>
+
+    <sql id="Base_Where_Clause">
+        <where>
+            AND 1=1
+            <choose>
+                <when test="status != null and status!=''">
+                    AND a.status = #{status}
+                </when>
+                <otherwise>
+                    AND a.status &gt;= 0
+                </otherwise>
+            </choose>
+            <if test="merchantOrderNo != null and merchantOrderNo != ''">
+                AND a.trade_no LIKE concat('%', #{tradeNo}, '%')
+            </if>
+            <if test="merchantIds != null and merchantIds!=''">
+                AND FIND_IN_SET(a.merchant_id,#{merchantIds})
+            </if>
+            <if test="merchantId != null and merchantId!=''">
+                AND a.merchant_id = #{merchantId}
+            </if>
+            <if test="routerId != null and routerId !=''">
+                AND a.channel_id IN (SELECT r.id FROM dst_channel r WHERE r.router_id = #{routerId})
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND a.update_time &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND a.update_time &lt;= #{endDate}
+            </if>
+            <if test="currentYear != null">
+                AND YEAR (a.update_time) = #{currentYear}
+            </if>
+            <if test="currentMonth != null">
+                AND MONTH (a.update_time) = #{currentMonth}
+            </if>
+            <if test="currentDay != null">
+                AND DAY (a.update_time) = #{currentDay}
+            </if>
+        </where>
+    </sql>
+
+
+    <select id="count" resultType="int">
+        SELECT count(1) FROM dst_withdraw a
+        <include refid="Base_Where_Clause"/>
+    </select>
+
+    <select id="sumMoney" resultType="java.lang.Double">
+        SELECT SUM(a.amount) FROM dst_withdraw a
+        <include refid="Base_Where_Clause"/>
+    </select>
+    <select id="accountCount" resultType="int">
+        SELECT count(1) FROM dst_withdraw a
+        <include refid="Base_Where_Clause"/>
+        AND a.status > 0
+    </select>
+
+    <select id="getSuccessRate" resultType="java.lang.Double">
+        SELECT CONVERT(successTotal/total*100,DECIMAL(15,2))
+        FROM (
+        SELECT SUM(1) total,
+        SUM(CASE WHEN a.status > 0 THEN 1 ELSE 0 END ) successTotal
+        FROM dst_withdraw a
+        <include refid="Base_Where_Clause"/>
+        ) temp
+    </select>
+
+    <select id="get" resultType="co.b4pay.admin.entity.Withdraw">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_withdraw a
+        <include refid="Base_Join_Clause"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="findList" resultType="co.b4pay.admin.entity.Withdraw">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_withdraw a
+        <include refid="Base_Join_Clause"/>
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+        <if test="pageSize &gt; 0">
+            LIMIT ${pageFirst}, ${pageSize}
+        </if>
+    </select>
+
+
+    <select id="findListCount" resultType="co.b4pay.admin.entity.Withdraw">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_withdraw a
+        <include refid="Base_Join_Clause"/>
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <select id="findByDerived" resultType="co.b4pay.admin.entity.Withdraw">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_withdraw a
+        <include refid="Base_Join_Clause"/>
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="insert">
+        <selectKey resultType="string" keyProperty="id" order="AFTER">
+            select @@IDENTITY as id
+        </selectKey>
+        insert into dst_withdraw(merchant_id,trade_no,merchant_company,card_no,bank_name,customer_name,amount,status,create_time,update_time,appTime)
+        values(#{merchantId}, #{tradeNo}, #{merchantCompany}, #{cardNo}, #{bankName}, #{customerName}, #{amount},
+        #{status}, now(), now(), #{appTime})
+    </insert>
+
+    <update id="updateStatus">
+        UPDATE dst_withdraw
+        SET status = #{status},
+        appTime = #{nowDate}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateTrade">
+        UPDATE dst_withdraw djr
+        SET djr.content = #{content},
+        djr.status = #{status},
+        djr.update_time = #{nowDate},
+        djr.exec_time = #{nowDate}
+        WHERE id = #{id}
+    </update>
+
+    <select id="findAdminChannel" resultType="String">
+        SELECT channel_id
+        FROM admin_channel
+        WHERE admin_id = #{id}
+    </select>
+
+
+</mapper>

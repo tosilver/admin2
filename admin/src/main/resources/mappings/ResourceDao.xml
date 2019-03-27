@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.common.system.dao.ResourceDao">
+    <sql id="Base_Column_List">
+        a.id,
+        a.name,
+        a.type,
+        a.url,
+        a.parent_id as "parentId",
+        a.parent_ids as "parentIds",
+        a.permission,
+        a.available,
+        a.sort,
+        a.status,
+        a.create_time as "createTime",
+        a.update_time as "updateTime"
+    </sql>
+
+    <sql id="Base_Where_Clause">
+        <where>
+            <choose>
+                <when test="status != null">
+                    AND a.status = #{status}
+                </when>
+                <otherwise>
+                    AND a.status != -1
+                </otherwise>
+            </choose>
+            <if test="type != null">
+                AND a.type = #{type}
+            </if>
+            <if test="parentId != null">
+                AND a.parent_id = #{parentId}
+            </if>
+        </where>
+    </sql>
+
+    <select id="get" resultType="co.b4pay.admin.common.system.entity.Resource">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM sys_resource a
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="findList" resultType="co.b4pay.admin.common.system.entity.Resource">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM sys_resource a
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.sort ASC
+            </otherwise>
+        </choose>
+        <if test="pageSize &gt; 0 and pageFirst &lt; pageSize">
+            LIMIT ${pageFirst}, ${pageSize}
+        </if>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO sys_resource (name,
+        type,
+        url,
+        parent_id,
+        parent_ids,
+        permission,
+        remark,
+        sort,
+        create_by,
+        create_time)
+        VALUES (#{name},
+        #{type},
+        #{url},
+        #{parentId},
+        #{parentIds},
+        #{permission},
+        #{remark},
+        #{sort},
+        #{createBy},
+        now())
+    </insert>
+
+    <update id="update">
+        UPDATE sys_resource
+        <set>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="url != null">
+                url = #{url},
+            </if>
+            <if test="parentId != null">
+                parent_id = #{parentId},
+            </if>
+            <if test="parentIds != null">
+                parent_ids = #{parentIds},
+            </if>
+            <if test="permission != null">
+                permission = #{permission},
+            </if>
+            <if test="remark != null">
+                remark = #{remark},
+            </if>
+            <if test="available != null">
+                available = #{available},
+            </if>
+            <if test="sort != null">
+                sort = #{sort},
+            </if>
+            <if test="updateBy != null">
+                update_by = #{updateBy},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE
+        FROM sys_resource
+        WHERE id = #{id}
+    </delete>
+</mapper>

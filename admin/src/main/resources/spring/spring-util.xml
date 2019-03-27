@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+         http://www.springframework.org/schema/context
+         http://www.springframework.org/schema/context/spring-context.xsd">
+    <!--加载配置文件-->
+    <context:property-placeholder location="classpath:config.properties"/>
+
+    <bean id="captchaValidator" class="co.b4pay.admin.common.captcha.CaptchaValidator"/>
+
+    <bean class="co.b4pay.admin.common.core.spring.SpringUtils"/>
+
+    <bean class="co.b4pay.admin.common.core.api.qiniu.QiniuApi"/>
+
+    <bean id="passwordHelper" class="co.b4pay.admin.common.util.helper.PasswordHelper">
+        <property name="algorithmName" value="MD5"/>
+        <property name="hashIterations" value="2"/>
+    </bean>
+
+    <!--COOKIE登录 -->
+    <!-- <bean id="rememberMeService" class="com.jeecms.common.security.rememberme.TokenBasedRememberMeServices">
+        <property name="key" value="jeecms"/> -->
+    <!--<property name="alwaysRemember" value="true"/> -->
+    <!-- <property name="userDetailsService" ref="memberMng"/> </bean> -->
+
+    <!--HttpSession -->
+    <!-- 	<bean id="sessionProvider" class="HttpSessionProvider" /> -->
+
+    <!--HMACSHA1签名类 -->
+    <!-- 	<bean id="hmacSHA1Signature" class="HmacSHA1Signature" /> -->
+
+    <!--缓存Session <bean id="sessionProvider" class="com.jeecms.common.web.session.CacheSessionProvider">
+        <property name="sessionCache" ref="sessionCache"/> <property name="sessionIdGenerator"
+        ref="sessionIdGenerator"/> </bean> -->
+    <!--Memcached缓存 <bean id="sessionCache" class="com.jeecms.common.web.session.cache.MemcachedDangaCache">
+        <property name="servers"> <list> <value>127.0.0.1:11211</value> </list> </property>
+        <property name="weights"> <list> <value>1</value> </list> </property> </bean> -->
+    <!--Ehcache缓存 <bean id="sessionCache" class="com.jeecms.common.web.session.cache.EhcacheSessionCache">
+        <property name="cache" ref="ehSessionCache"/> </bean> -->
+    <!--SessionId生成器 <bean id="sessionIdGenerator" class="com.jeecms.common.web.session.id.JdkUUIDGenerator"/> -->
+    <!--图片处理 不使用JMagick <bean id="imageScale" class="com.jeecms.common.image.ImageScaleImpl"
+        init-method="init"> <property name="tryMagick" value="false"/> </bean> -->
+
+    <!--密码加密器 -->
+    <!--<bean id="pwdEncoder" class="co.b4pay.admin.common.core.security.encoder.Md5PwdEncoder" p:uppercase="true">-->
+    <!-- 给加密器添加初始混淆码，一旦应用不能修改，在用户登陆验证时会有应用 -->
+    <!--<property name="defaultSalt" value="abc123!@#"/>-->
+    <!--</bean>-->
+
+    <!-- 	<bean id="ehCachePlugin" class="EhCachePlugin"> -->
+    <!-- 		<constructor-arg name="configurationFileURL" value="classpath:ehcache/ehcache-common.xml" /> -->
+    <!-- 	</bean> -->
+
+    <!-- 	<bean id="myPlugins" class="Plugins"> -->
+    <!-- 		<property name="pluginList"> -->
+    <!-- 			<list> -->
+    <!-- 				<ref bean="ehCachePlugin" /> -->
+    <!-- 			</list> -->
+    <!-- 		</property> -->
+    <!-- 	</bean> -->
+
+    <!--执行时间标签 -->
+    <!-- <bean id="uuid" class="com.jeecms.common.web.freemarker.UUIDDirective"/> <bean
+        id="process_time" class="com.jeecms.common.web.freemarker.ProcessTimeDirective"/>
+        <bean id="text_cut" class="com.jeecms.common.web.freemarker.TextCutDirective"/> <bean
+        id="html_cut" class="com.jeecms.common.web.freemarker.HtmlCutDirective"/> <bean id="realPathResolver"
+        class="com.jeecms.common.web.springmvc.ServletContextRealPathResolver"/> <bean id="fileRepository"
+        class="com.jeecms.common.upload.FileRepository"/> -->
+    <!--文件模板 -->
+    <!-- <bean id="tplManager" class="com.jeecms.core.tpl.FileTplManagerImpl"/> -->
+    <!--数据库模板 <bean id="dbTplDao" class="com.jeecms.core.dao.impl.DbTplDaoImpl"/> <bean
+        id="tplManager" class="com.jeecms.core.manager.impl.DbTplMngImpl"/> -->
+    <!-- QQWry.Dat是显IP版QQ（彩虹外挂等），纯真IP数据库查询器等的IP数据库文件 -->
+    <!-- <bean id="ipSeeker" class="com.jeecms.common.ipseek.IPSeekerImpl" init-method="init">
+        <property name="dir" value="/WEB-INF/ipseek"/> <property name="filename" value="QQWry.Dat"/>
+        </bean> <bean id="authenticationDao" class="com.jeecms.core.dao.impl.AuthenticationDaoImpl"/>
+        <bean id="dbFileDao" class="com.jeecms.core.dao.impl.DbFileDaoImpl"/> <bean id="unifiedUserDao"
+        class="com.jeecms.core.dao.impl.UnifiedUserDaoImpl"/> <bean id="ftpDao" class="com.jeecms.core.dao.impl.FtpDaoImpl"/>
+        <bean id="configDao" class="com.jeecms.core.dao.impl.ConfigDaoImpl"/> <bean id="authenticationMng"
+        class="com.jeecms.core.manager.impl.AuthenticationMngImpl"/> <bean id="dbFileMng"
+        class="com.jeecms.core.manager.impl.DbFileMngImpl"/> <bean id="unifiedUserMng" class="com.jeecms.core.manager.impl.UnifiedUserMngImpl"/>
+        <bean id="ftpMng" class="com.jeecms.core.manager.impl.FtpMngImpl"/> <bean id="configMng"
+        class="com.jeecms.core.manager.impl.ConfigMngImpl"/> -->
+</beans>

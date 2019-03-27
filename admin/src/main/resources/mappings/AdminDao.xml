@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.common.system.dao.AdminDao">
+    <sql id="Base_Column_List">
+        a.id,
+        a.realname,
+        a.organization_id as "organizationId",
+        a.username,
+        a.password,
+        a.salt,
+        a.name,
+        a.role_ids AS "roleIdsStr",
+        a.merchant_ids AS "merchantIdsStr",
+        a.email,
+        a.phone,
+        a.mobile,
+        a.photo,
+        a.remark,
+        a.create_time as "createTime",
+        a.update_time as "updateTime",
+        a.status
+    </sql>
+
+    <sql id="Base_Where_Clause">
+        <where>
+            <choose>
+                <when test="status != null">
+                    AND a.status = #{status}
+                </when>
+                <otherwise>
+                    AND a.status != -1
+                </otherwise>
+            </choose>
+            <if test="type != null">
+                AND a.type = #{type}
+            </if>
+        </where>
+    </sql>
+
+    <select id="getByUsername" resultType="co.b4pay.admin.common.system.entity.Admin">
+        select
+        <include refid="Base_Column_List"/>
+        from sys_admin a
+        where a.username = #{username}
+    </select>
+
+    <select id="get" resultType="co.b4pay.admin.common.system.entity.Admin">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM sys_admin a
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="findList" resultType="co.b4pay.admin.common.system.entity.Admin">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM sys_admin a
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time
+            </otherwise>
+        </choose>
+        <if test="pageSize &gt; 0 and pageFirst &lt; pageSize">
+            LIMIT ${pageFirst}, ${pageSize}
+        </if>
+    </select>
+
+    <insert id="insert">
+        insert into sys_admin (realname,
+        organization_id,
+        username,
+        password,
+        salt,
+        name,
+        role_ids,
+        merchant_ids,
+        email,
+        phone,
+        mobile,
+        photo,
+        create_by,
+        create_time,
+        remark)
+        values (#{realname},
+        #{organizationId},
+        #{username},
+        #{password},
+        #{salt},
+        #{name},
+        #{roleIdsStr},
+        #{merchantIdsStr},
+        #{email},
+        #{phone},
+        #{mobile},
+        #{photo},
+        #{createBy},
+        now(),
+        #{remark})
+    </insert>
+
+    <update id="update">
+        update sys_admin
+        <set>
+            <if test="realname != null">
+                realname=#{realname},
+            </if>
+            <if test="organizationId != null">
+                organization_id=#{organizationId},
+            </if>
+            <if test="username != null">
+                username=#{username},
+            </if>
+            <if test="password != null">
+                password=#{password},
+            </if>
+            <if test="salt != null">
+                salt=#{salt},
+            </if>
+            <if test="roleIdsStr != null">
+                role_ids=#{roleIdsStr},
+            </if>
+            <if test="merchantIdsStr != null">
+                merchant_ids=#{merchantIdsStr},
+            </if>
+            <if test="locked != null">
+                locked=#{locked},
+            </if>
+            <if test="email != null">
+                email=#{email},
+            </if>
+            <if test="mobile != null">
+                mobile=#{mobile},
+            </if>
+            <if test="photo != null">
+                photo=#{photo},
+            </if>
+            <if test="status != null">
+                status=#{status},
+            </if>
+            <if test="updateBy != null">
+                update_by=#{updateBy},
+            </if>
+            <if test="updateTime != null">
+                update_time=now(),
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+
+    <delete id="delete">
+        update sys_admin
+        set status = 0
+        where id = #{id}
+    </delete>
+
+    <update id="startUsing">
+        update sys_admin
+        set status = 1
+        where id = #{id}
+    </update>
+
+    <select id="findByMerchantId" parameterType="java.lang.String"
+            resultType="co.b4pay.admin.common.system.entity.Admin">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM sys_admin a
+        WHERE a.merchant_ids = #{merchantIds}
+        LIMIT 1
+    </select>
+</mapper>

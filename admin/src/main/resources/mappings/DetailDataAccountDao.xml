@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.dao.DetailDataAccountDao">
+
+    <sql id="Base_Column_List">
+        a.id,
+        a.serial_no AS "serial_no",
+        a.order_name AS "orderName",
+        a.receiver_login_name AS "receiverLoginName",
+        a.receiver_no AS receiverNo,
+        a.receiver_name AS "receiverName",
+        a.amount,
+        a.receiver_type AS "receiver_type",
+        a.batch_no AS "batchNo",
+        a.merchant_id AS merchantId,
+        a.company,
+        a.status,
+        a.create_time AS "createTime",
+        a.update_time AS "updateTime"
+    </sql>
+
+    <sql id="Base_Where_Clause">
+        <where>
+            <choose>
+                <when test="status != null">
+                    AND a.status = #{status}
+                </when>
+                <otherwise>
+                    AND a.status &gt; -2
+                </otherwise>
+            </choose>
+            <if test="merchantIds !=null">
+                AND FIND_IN_SET(a.merchant_id,#{merchantIds})
+            </if>
+            <if test="merchantId != null">
+                AND a.merchant_id = #{merchantId}
+            </if>
+            <if test="batchNo !=null">
+                AND batch_no LIKE concat('%', #{batchNo}, '%')
+            </if>
+            <if test="serialNo !=null">
+                AND serial_no LIKE concat('%', #{serialNo}, '%')
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND a.create_time &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND a.create_time &lt;= #{endDate}
+            </if>
+            <if test="currentYear != null">
+                AND YEAR (a.create_time) = #{currentYear}
+            </if>
+            <if test="currentMonth != null">
+                AND MONTH (a.create_time) = #{currentMonth}
+            </if>
+            <if test="currentDay != null">
+                AND DAY (a.create_time) = #{currentDay}
+            </if>
+        </where>
+    </sql>
+
+
+    <select id="get" resultType="co.b4pay.admin.entity.DetailDataAccount">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_detail_data_account a
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT count(1) FROM dst_detail_data_account a
+        <include refid="Base_Where_Clause"/>
+    </select>
+    <select id="findByStatus" resultType="co.b4pay.admin.entity.DetailDataAccount">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_detail_data_account a
+        WHERE a.status = #{status}
+    </select>
+
+    <select id="findBySerialNo" resultType="co.b4pay.admin.entity.DetailDataAccount">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_detail_data_account a
+        WHERE a.serial_no = #{serialNo}
+    </select>
+
+    <select id="sumAmount" resultType="java.lang.Double">
+        SELECT SUM(a.amount) FROM dst_detail_data_account a
+        <include refid="Base_Where_Clause"/>
+    </select>
+
+    <select id="findList" resultType="co.b4pay.admin.entity.DetailDataAccount">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_detail_data_account a
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+        <if test="pageSize &gt; 0">
+            LIMIT ${pageFirst},${pageSize}
+        </if>
+    </select>
+
+    <!--<insert id="insert">-->
+    <!--INSERT INTO dst_detail_data_account(serial_no,order_name,receiver_login_name,receiver_no,receiver_name,amount,receiver_type,batch_no,merchant_id,company,status,create_time)-->
+    <!--VALUES(#{serialNo},#{orderName}, #{receiverLoginName}, #{receiverNo},#{receiverName}, #{amount}, #{receiverType}, #{batchNo}, #{merchantId}, #{company},#{status},now())-->
+    <!--</insert>-->
+
+    <!--<insert id="insert">-->
+    <!--INSERT INTO dst_detail_data_account(serial_no,orderName,receiverLoginName,receiverNo,receiverName,amount,receiver_type,batchNo,merchantId,company,create_time)-->
+    <!--VALUES(#{serialNo},#{orderName}, #{receiverLoginName}, #{receiverNo},#{receiverName}, #{amount}, #{receiverType}, #{batchNo}, #{merchantId}, #{company},now())-->
+    <!--</insert>-->
+
+    <insert id="insert">
+        INSERT INTO dst_detail_data_account (serial_no,
+        orderName,
+        receiverLoginName,
+        receiverNo,
+        receiverName,
+        amount,
+        receiver_type,
+        batchNo,
+        merchantId,
+        company,
+        create_time)
+        VALUES (#{serialNo},
+        #{orderName},
+        #{receiverLoginName},
+        #{receiverNo},
+        #{receiverName},
+        #{amount},
+        #{receiverType},
+        #{batchNo},
+        #{merchantId},
+        #{company},
+        now())
+    </insert>
+
+
+    <!--<update id="update">-->
+    <!--UPDATE dst_payroll-->
+    <!--<set>-->
+    <!--<if test="status != null">-->
+    <!--status = #{status},-->
+    <!--</if>-->
+    <!--<if test="updateTime != null">-->
+    <!--update_time =now(),-->
+    <!--</if>-->
+    <!--</set>-->
+    <!--WHERE id = #{id}-->
+    <!--</update>-->
+
+    <update id="update">
+        UPDATE dst_payroll
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time =now(),
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        update dst_payroll
+        set status = -2
+        where id = #{id}
+    </delete>
+</mapper>

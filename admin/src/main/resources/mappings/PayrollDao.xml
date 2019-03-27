@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.dao.PayrollDao">
+
+    <sql id="Base_Column_List">
+        a.id,
+        a.down_order_id AS "downOrderId",
+        a.up_order_id AS "upOrderId",
+        a.merchant_id AS "merchantId",
+        a.company,
+        a.name,
+        a.card_no AS "cardNo",
+        a.purpose,
+        a.amount,
+        a.id_card_no AS "idCardNo",
+        a.summary,
+        a.merchant_pay_cost AS "merchantPayCost",
+        a.channel_pay_cost AS "channelPayCost",
+        a.notify_url AS "notifyUrl",
+        a.content,
+        a.business_type AS "businessType",
+        a.status,
+        a.create_time AS "createTime",
+        a.update_time AS "updateTime"
+    </sql>
+
+
+    <sql id="Base_Where_Clause">
+        <where>
+            <choose>
+                <when test="status != null">
+                    AND a.status = #{status}
+                </when>
+                <otherwise>
+                    AND a.status &gt; -2
+                </otherwise>
+            </choose>
+            <if test="merchantIds !=null">
+                AND FIND_IN_SET(a.merchant_id,#{merchantIds})
+            </if>
+            <if test="merchantId != null">
+                AND a.merchant_id = #{merchantId}
+            </if>
+            <if test="downOrderId !=null">
+                AND down_order_id LIKE concat('%', #{downOrderId}, '%')
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND a.create_time &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND a.create_time &lt;= #{endDate}
+            </if>
+            <if test="currentYear != null">
+                AND YEAR (a.create_time) = #{currentYear}
+            </if>
+            <if test="currentMonth != null">
+                AND MONTH (a.create_time) = #{currentMonth}
+            </if>
+            <if test="currentDay != null">
+                AND DAY (a.create_time) = #{currentDay}
+            </if>
+        </where>
+    </sql>
+    <select id="get" resultType="co.b4pay.admin.entity.Payroll">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_payroll a
+        WHERE a.id = #{id}
+    </select>
+    <select id="count" resultType="int">
+        SELECT count(1) FROM dst_payroll a
+        <include refid="Base_Where_Clause"/>
+    </select>
+    <select id="findByStatus" resultType="co.b4pay.admin.entity.Payroll">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_payroll a
+        WHERE a.status = #{status}
+    </select>
+    <select id="findByUpOrderId" resultType="co.b4pay.admin.entity.Payroll">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_payroll a
+        WHERE a.up_order_id = #{upOrderId}
+    </select>
+
+    <select id="findByDownOrderId" resultType="co.b4pay.admin.entity.Payroll">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_payroll a
+        WHERE a.down_order_id = #{downOrderId} AND a.merchant_id = #{merchantId}
+    </select>
+
+    <select id="sumAmount" resultType="java.lang.Double">
+        SELECT SUM(a.amount) FROM dst_payroll a
+        <include refid="Base_Where_Clause"/>
+    </select>
+
+    <select id="findList" resultType="co.b4pay.admin.entity.Payroll">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_payroll a
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+        <if test="pageSize &gt; 0">
+            LIMIT ${pageFirst},${pageSize}
+        </if>
+    </select>
+    <insert id="insert">
+        INSERT INTO dst_payroll (down_order_id,
+        up_order_id,
+        merchant_id,
+        company,
+        name,
+        card_no,
+        purpose,
+        amount,
+        id_card_no,
+        summary,
+        merchant_pay_cost,
+        channel_pay_cost,
+        notify_url,
+        status,
+        create_time)
+        VALUES (#{downOrderId},
+        #{upOrderId},
+        #{merchantId},
+        #{company},
+        #{name},
+        #{cardNo},
+        #{purpose},
+        #{amount},
+        #{idCardNo},
+        #{summary},
+        #{merchantPayCost},
+        #{channelPayCost},
+        #{notifyUrl},
+        #{status},
+        now())
+    </insert>
+
+
+    <!--<update id="update">-->
+    <!--UPDATE dst_payroll-->
+    <!--<set>-->
+    <!--<if test="name != null">-->
+    <!--name = #{name},-->
+    <!--</if>-->
+    <!--<if test="cardNo != null">-->
+    <!--card_no = #{cardNo},-->
+    <!--</if>-->
+    <!--<if test="idCardNo != null">-->
+    <!--id_card_no = #{idCardNo},-->
+    <!--</if>-->
+    <!--<if test="company !=null">-->
+    <!--company = #{company},-->
+    <!--</if>-->
+    <!--<if test="content !=null">-->
+    <!--content = #{content},-->
+    <!--</if>-->
+    <!--<if test="merchantPayCost != null">-->
+    <!--merchant_pay_cost = #{merchantPayCost},-->
+    <!--</if>-->
+    <!--<if test="channelPayCost !=null">-->
+    <!--channel_pay_cost = #{channelPayCost},-->
+    <!--</if>-->
+    <!--<if test="status != null">-->
+    <!--status = #{status},-->
+    <!--</if>-->
+    <!--<if test="updateTime != null">-->
+    <!--update_time =now(),-->
+    <!--</if>-->
+    <!--</set>-->
+    <!--WHERE id = #{id}-->
+    <!--</update>-->
+    <update id="update">
+        UPDATE dst_payroll
+        <set>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="cardNo != null">
+                card_no = #{cardNo},
+            </if>
+            <if test="idCardNo != null">
+                id_card_no = #{idCardNo},
+            </if>
+            <if test="company !=null">
+                company = #{company},
+            </if>
+            <if test="content !=null">
+                content = #{content},
+            </if>
+            <if test="merchantPayCost != null">
+                merchant_pay_cost = #{merchantPayCost},
+            </if>
+            <if test="channelPayCost !=null">
+                channel_pay_cost = #{channelPayCost},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time =now(),
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        update dst_payroll
+        set status = -2
+        where id = #{id}
+    </delete>
+</mapper>

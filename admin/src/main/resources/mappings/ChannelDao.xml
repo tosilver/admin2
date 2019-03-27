@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.dao.ChannelDao">
+    <sql id="Base_Column_List">
+        a.id,
+        a.router_id AS "router.id",
+        b.name AS "router.name",
+        a.goods_type_id AS "goodsType.id",
+        c.name AS "goodsType.name",
+        a.name,
+        a.product,
+        a.test_pid AS "testPid",
+        a.test_private_key AS "testPrivateKey",
+        a.test_public_key AS "testPublicKey",
+        a.test_appid AS "testAppid",
+        a.prod_pid AS "prodPid",
+        a.prod_private_key AS "prodPrivateKey",
+        a.prod_public_key AS "prodPublicKey",
+        a.prod_appid AS "prodAppid",
+        a.amount_init AS "amount_init",
+        a.amount_limit AS "amountLimit",
+        a.pay_cost AS "payCost",
+        a.cost_rate AS "costRate",
+        a.status,
+        a.create_time AS "createTime",
+        a.update_time AS "updateTime",
+        a.unit_price AS "unitPrice",
+        a.min_price AS "minPrice",
+        a.dstDescribe AS "dstDescribe",
+        a.ip4 AS "ip4",
+        a.amount_min AS "amountMin",
+        a.rate AS "rate",
+        a.fz_percentage AS "fzPercentage"
+    </sql>
+    <sql id="Base_Column_List2">
+        a.id,
+        a.router_id AS "router.id",
+        a.goods_type_id AS "goodsType.id",
+        a.name,
+        a.product,
+        a.test_pid AS "testPid",
+        a.test_private_key AS "testPrivateKey",
+        a.test_public_key AS "testPublicKey",
+        a.test_appid AS "testAppid",
+        a.prod_pid AS "prodPid",
+        a.prod_private_key AS "prodPrivateKey",
+        a.prod_public_key AS "prodPublicKey",
+        a.prod_appid AS "prodAppid",
+        a.amount_init AS "amount_init",
+        a.amount_limit AS "amountLimit",
+        a.pay_cost AS "payCost",
+        a.cost_rate AS "costRate",
+        a.status,
+        a.create_time AS "createTime",
+        a.update_time AS "updateTime",
+        a.unit_price AS "unitPrice",
+        a.min_price AS "minPrice",
+        a.dstDescribe AS "dstDescribe",
+        a.ip4 AS "ip4",
+        a.amount_min AS "amountMin",
+        a.rate AS "rate",
+        a.fz_percentage AS "fzPercentage"
+    </sql>
+
+    <sql id="Base_Join_Clause">
+        LEFT JOIN dst_router b ON a.router_id = b.id
+        LEFT JOIN dst_goods_type c ON a.goods_type_id = c.id
+    </sql>
+
+    <sql id="Base_Where_Clause">
+        <where>
+            <choose>
+                <when test="status != null and status != 0">
+                    AND a.status = #{status}
+                </when>
+                <otherwise>
+                    AND a.status != -2
+                </otherwise>
+            </choose>
+            <if test="name != null">
+                AND a.name LIKE concat('%', #{name}, '%')
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (a.phone like concat('%',#{keyword},'%') or a.name like concat('%',#{keyword},'%') or a.dstDescribe
+                like concat('%',#{keyword},'%') )
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND a.create_time &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND a.create_time &lt;= #{endDate}
+            </if>
+            <if test="routerId != null and routerId != ''">
+                AND a.router = #{routerId}
+            </if>
+            <if test="product !=null and product != ''">
+                AND a.product = #{product}
+            </if>
+        </where>
+    </sql>
+
+    <select id="get" resultType="co.b4pay.admin.entity.Channel">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_channel a
+        <include refid="Base_Join_Clause"/>
+        WHERE a.id = #{id}
+    </select>
+    <select id="findByPayCost" resultType="co.b4pay.admin.entity.Channel">
+        SELECT
+        <include refid="Base_Column_List2"/>
+        FROM dst_channel a
+        WHERE a.router_id=#{routerId}
+    </select>
+    <select id="count" resultType="int">
+        SELECT count(1) FROM dst_channel a
+        <include refid="Base_Where_Clause"/>
+    </select>
+    <select id="findByProduct" resultType="co.b4pay.admin.entity.Channel">
+        SELECT
+        <include refid="Base_Column_List2"/>
+        FROM dst_channel a
+        WHERE a.product=#{product}
+    </select>
+    <select id="findByDstDescribe" resultType="co.b4pay.admin.entity.Channel">
+        SELECT
+        <include refid="Base_Column_List2"/>
+        FROM dst_channel a
+        WHERE a.dstDescribe=#{dstDescribe}
+    </select>
+    <select id="findList" resultType="co.b4pay.admin.entity.Channel">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_channel a
+        <include refid="Base_Join_Clause"/>
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.status desc,a.create_time
+            </otherwise>
+        </choose>
+        <if test="pageSize &gt; 0">
+            LIMIT ${pageFirst}, ${pageSize}
+        </if>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO dst_channel (router_id,
+        goods_type_id,
+        `name`,
+        product,
+        test_pid,
+        test_private_key,
+        test_public_key,
+        `test_appid`,
+        prod_pid,
+        prod_private_key,
+        prod_public_key,
+        prod_appid,
+        amount_init,
+        amount_limit,
+        pay_cost,
+        cost_rate,
+        create_time,
+        update_time,
+        unit_price,
+        min_price,
+        dstDescribe,
+        ip4,
+        amount_min,
+        rate,
+        fz_percentage)
+        VALUES (#{router.id},
+        #{goodsType.id},
+        #{name},
+        #{product},
+        #{testPid},
+        #{testPrivateKey},
+        #{testPublicKey},
+        #{testAppid},
+        #{prodPid},
+        #{prodPrivateKey},
+        #{prodPublicKey},
+        #{prodAppid},
+        #{amountInit},
+        #{amountLimit},
+        #{payCost},
+        #{costRate},
+        now(),
+        now(),
+        #{unitPrice},
+        #{minPrice},
+        #{dstDescribe},
+        #{ip4},
+        #{amountMin},
+        #{rate},
+        #{fzPercentage})
+
+    </insert>
+
+    <update id="update">
+        UPDATE dst_channel SET
+        <if test="router != null">
+            router_id = #{router.id},
+        </if>
+        <if test="goodsType != null">
+            goods_type_id = #{goodsType.id},
+        </if>
+        <if test="name != null">
+            name = #{name},
+        </if>
+        <if test="testPid != null">
+            test_pid = #{testPid},
+        </if>
+        <if test="testPrivateKey != null">
+            test_private_key = #{testPrivateKey},
+        </if>
+        <if test="product !=null">
+            product = #{product},
+        </if>
+        <if test="testPublicKey != null">
+            test_public_key = #{testPublicKey},
+        </if>
+        <if test="testAppid != null">
+            test_appid = #{testAppid},
+        </if>
+        <if test="prodPid != null">
+            prod_pid = #{prodPid},
+        </if>
+        <if test="prodPrivateKey != null">
+            prod_private_key = #{prodPrivateKey},
+        </if>
+        <if test="prodPublicKey != null">
+            prod_public_key = #{prodPublicKey},
+        </if>
+        <if test="prodAppid != null">
+            prod_appid = #{prodAppid},
+        </if>
+        <if test="amountInit != null">
+            amount_init = #{amountInit},
+        </if>
+        <if test="amountLimit != null">
+            amount_limit = #{amountLimit},
+        </if>
+        <if test="payCost != null">
+            pay_cost = #{payCost},
+        </if>
+        <if test="costRate != null">
+            cost_rate = #{costRate},
+        </if>
+        <if test="unitPrice != null">
+            unit_price = #{unitPrice},
+        </if>
+        <if test="minPrice !=null">
+            min_price = #{minPrice},
+        </if>
+        <if test="dstDescribe !=null">
+            dstDescribe = #{dstDescribe},
+        </if>
+        <if test="amountMin != null">
+            amount_min = #{amountMin},
+        </if>
+        <if test="ip4 !=null">
+            ip4 = #{ip4},
+        </if>
+        <if test="rate != null">
+            rate = #{rate},
+        </if>
+        <if test="fzPercentage != null">
+            fz_percentage = #{fzPercentage},
+        </if>
+        update_time = now()
+        WHERE id = #{id}
+    </update>
+
+    <!--<update id="updateStatus">-->
+    <!--UPDATE dst_channel-->
+    <!--SET status = #{status}, update_time = now()-->
+    <!--WHERE id = #{id}-->
+    <!--</update>-->
+    <update id="updateStatus">
+        UPDATE dst_channel
+        SET status = #{status},
+        update_time = now()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        UPDATE dst_channel a
+        SET a.status = -1
+        WHERE a.id = #{id}
+    </delete>
+
+
+    <select id="selectName" resultType="co.b4pay.admin.entity.Channel">
+        SELECT d.id, d.name
+        FROM dst_channel d
+        WHERE d.status = 1
+    </select>
+
+    <insert id="insertAdminChannel">
+        INSERT INTO admin_channel
+        VALUES (#{adminId}, #{channelId})
+    </insert>
+
+    <update id="updateAdminChannel">
+        UPDATE admin_channel
+        SET channel_id = #{channelId}
+        WHERE admin_id = #{adminId}
+    </update>
+
+    <select id="selectAdminChannel" resultType="co.b4pay.admin.entity.AdminChannel">
+        SELECT *
+        FROM admin_channel
+        WHERE admin_id = #{adminId}
+    </select>
+
+
+    <select id="findByAdmin" resultType="co.b4pay.admin.entity.Channel">
+        SELECT *
+        FROM dst_channel
+        WHERE FIND_IN_SET(id, #{id});
+    </select>
+
+    <select id="selName" resultType="co.b4pay.admin.entity.Router">
+        SELECT *
+        FROM dst_router
+    </select>
+
+</mapper>

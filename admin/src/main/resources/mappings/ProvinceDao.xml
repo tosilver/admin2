@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.dao.ProvinceDao">
+    <sql id="Base_Column_List">
+        a.id,
+        a.provinceid AS "provinceId",
+        a.province
+    </sql>
+
+    <!--<sql id="Base_Where_Clause">
+	</sql>-->
+
+    <select id="count" resultType="int">
+        SELECT count(1)
+        FROM sys_provinces a
+    </select>
+
+    <select id="findList" resultType="co.b4pay.admin.entity.Province">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM sys_provinces a
+        <if test="pageSize &gt; 0">
+            LIMIT ${pageFirst}, ${pageSize}
+        </if>
+    </select>
+
+    <select id="get" resultType="co.b4pay.admin.entity.Province">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM sys_provinces a
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="getByProvince" parameterType="java.lang.String" resultType="co.b4pay.admin.entity.Province">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM sys_provinces a
+        WHERE a.province LIKE concat('', #{province}, '%')
+    </select>
+
+</mapper>

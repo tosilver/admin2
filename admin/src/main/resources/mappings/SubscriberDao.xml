@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.dao.SubscriberDao">
+    <sql id="Base_Column_List">
+        a.id,
+        a.merchant_id AS "merchantId",
+        a.name,
+        a.card_no AS "cardNo",
+        a.id_card_no as "idCardNo",
+        a.status,
+        a.create_time as "createTime",
+        a.update_time as "updateTime"
+    </sql>
+
+    <sql id="Base_Where_Clause">
+        <where>
+            <choose>
+                <when test="status != null">
+                    AND a.status = #{status}
+                </when>
+                <otherwise>
+                    AND a.status != -1
+                </otherwise>
+            </choose>
+            <if test="merchantId != null">
+                AND a.merchant_id = #{merchantId}
+            </if>
+        </where>
+    </sql>
+
+    <select id="get" resultType="co.b4pay.admin.entity.Subscriber">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_subscriber a
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="findList" resultType="co.b4pay.admin.entity.Subscriber">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_subscriber a
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+        <if test="pageSize &gt; 0">
+            LIMIT ${pageFirst}, ${pageSize}
+        </if>
+    </select>
+    <insert id="insert">
+        INSERT INTO dst_subscriber (merchant_id, name, card_no, id_card_no, status, create_time)
+        VALUES (#{merchantId}, #{name}, #{cardNo}, #{idCardNo}, #{status}, now())
+    </insert>
+    <update id="update">
+        UPDATE dst_subscriber
+        <set>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="cardNo != null">
+                card_no = #{cardNo},
+            </if>
+            <if test="idCardNo != null">
+                id_card_no = #{idCardNo},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        update dst_subscriber
+        set status = -1
+        where id = #{id}
+    </delete>
+
+</mapper>

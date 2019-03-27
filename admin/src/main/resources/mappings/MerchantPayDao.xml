@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.dao.MerchantPayDao">
+    <sql id="Base_Column_List">
+        a.id,
+        a.order_id AS "orderId",
+        a.merchant_id AS "merchantId",
+        a.company,
+        a.amount,
+        a.operator,
+        a.status,
+        a.create_time AS "createTime",
+        a.update_time AS "updateTime"
+    </sql>
+
+
+    <sql id="Base_Where_Clause">
+        <where>
+            <choose>
+                <when test="status != null">
+                    AND a.status = #{status}
+                </when>
+                <otherwise>
+                    AND a.status >=0
+                </otherwise>
+            </choose>
+            <if test="orderId != null">
+                AND a.order_id LIKE concat('%', #{orderId}, '%')
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND a.create_time &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND a.create_time &lt;= #{endDate}
+            </if>
+            <if test="merchantId != null and merchantId != ''">
+                AND a.merchant_id = #{merchantId}
+            </if>
+            <if test="merchantIds != null and merchantIds!=''">
+                AND FIND_IN_SET(a.merchant_id,#{merchantIds})
+            </if>
+        </where>
+    </sql>
+
+    <select id="get" resultType="co.b4pay.admin.entity.MerchantPay">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_merchant_pay a
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT count(1) FROM dst_merchant_pay a
+        <include refid="Base_Where_Clause"/>
+    </select>
+    <select id="sumAmount" resultType="java.lang.Double">
+        SELECT SUM(a.amount) FROM dst_merchant_pay a
+        <include refid="Base_Where_Clause"/>
+    </select>
+    <select id="findList" resultType="co.b4pay.admin.entity.MerchantPay">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dst_merchant_pay a
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_time DESC
+            </otherwise>
+        </choose>
+        <if test="pageSize &gt; 0">
+            LIMIT ${pageFirst}, ${pageSize}
+        </if>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO dst_merchant_pay (order_id,
+        merchant_id,
+        company,
+        amount,
+        operator,
+        status,
+        create_time,
+        update_time)
+        VALUES (#{orderId}, #{merchantId}, #{company}, #{amount}, #{operator}, #{status}, now(), now())
+    </insert>
+
+    <!--<insert id="insert">-->
+    <!--INSERT INTO dst_merchant_pay(order_id,merchant_id,company,amount,operator,status,create_time,update_time)-->
+    <!--VALUES(#{orderId},#{merchantId},#{company},#{amount},#{operator},#{status},#{updateTime},#{updateTime})-->
+    <!--</insert>-->
+
+    <update id="update">
+        UPDATE dst_merchant_pay a SET
+        <if test="amount != null">
+            a.amount = #{amount},
+        </if>
+        <if test="status != null">
+            a.status = #{status},
+        </if>
+        update_time = now()
+        WHERE a.id = #{id}
+    </update>
+    <update id="updateStatus">
+        UPDATE dst_merchant_pay a
+        SET a.status = #{status},
+        a.update_time = now()
+        WHERE a.id = #{id}
+    </update>
+
+    <!--<update id="updateStatus">-->
+    <!--UPDATE dst_merchant_pay a-->
+    <!--SET a.status = #{status},a.update_time = #{updateTime}-->
+    <!--WHERE a.id = #{id}-->
+    <!--</update>-->
+
+    <delete id="delete">
+        UPDATE dst_merchant_pay a
+        SET a.status = -1
+        WHERE a.id = #{id}
+    </delete>
+</mapper>

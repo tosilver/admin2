@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.b4pay.admin.common.system.dao.RoleDao">
+    <sql id="Base_Column_List">
+        a.id,
+        a.role,
+        a.description,
+        a.resource_ids as "resourceIdsStr",
+        a.available,
+        a.remark,
+        a.create_time as "createTime",
+        a.update_time as "updateTime",
+        a.status
+    </sql>
+
+    <sql id="Base_Where_Clause">
+        <where>
+            <choose>
+                <when test="status != null">
+                    AND a.status = #{status}
+                </when>
+                <otherwise>
+                    AND a.status != -1
+                </otherwise>
+            </choose>
+        </where>
+    </sql>
+
+    <select id="get" resultType="co.b4pay.admin.common.system.entity.Role">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM sys_role a
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="findList" resultType="co.b4pay.admin.common.system.entity.Role">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM sys_role a
+        <include refid="Base_Where_Clause"/>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY a.${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.id
+            </otherwise>
+        </choose>
+        <if test="pageSize &gt; 0 and pageFirst &lt; pageSize">
+            LIMIT ${pageFirst}, ${pageSize}
+        </if>
+    </select>
+
+    <insert id="insert">
+        insert into sys_role (role, description, resource_ids, create_by, create_time, remark)
+        values (#{role}, #{description}, #{resourceIdsStr}, #{createBy}, now(), #{remark})
+    </insert>
+
+    <update id="update">
+        update sys_role
+        set role = #{role},
+        description = #{description},
+        resource_ids = #{resourceIdsStr},
+        update_by = #{updateBy},
+        update_time = now(),
+        remark = #{remark},
+        available = #{available}
+        where id = #{id}
+    </update>
+
+    <delete id="delete">
+        update sys_role
+        set status = -1
+        where id = #{id}
+    </delete>
+</mapper>
